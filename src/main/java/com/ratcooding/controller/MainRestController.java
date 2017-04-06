@@ -1,6 +1,6 @@
 package com.ratcooding.controller;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,8 +27,16 @@ import com.ratcooding.repository.ExpenseRepository;
 		private ExpenseRepository repository;
 
 		@RequestMapping(method = RequestMethod.GET)
-		public ResponseEntity<Collection<Expense>> getAllExpenses() {
-			return new ResponseEntity<>((Collection<Expense>) repository.findAll(), HttpStatus.OK);   
+		public ResponseEntity<Iterable<Expense>> getAllExpenses() {
+			return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);   
+		}
+		@RequestMapping(method=RequestMethod.GET, value="/{id}")
+		public Expense getExpenseById(@PathVariable("id") Long id) {
+			return repository.findOne(id);
+		}
+		@RequestMapping(method=RequestMethod.GET, value="/{description}")
+		public ResponseEntity<List<Expense>> getExpenseByDescription(@PathVariable("description") String description ) {
+			return new ResponseEntity<>(repository.findByDescription(description), HttpStatus.OK);
 		}
 		@RequestMapping(method = RequestMethod.POST)
 		public Expense addExpense(@RequestBody Expense expense) {
@@ -38,11 +46,12 @@ import com.ratcooding.repository.ExpenseRepository;
 		public void deleteExpense(@PathVariable("id") Long id) {
 			repository.delete(id);
 		}
-		@RequestMapping(method=RequestMethod.PUT, value="/{idExpense}")
-		public Expense updateExpense(@PathVariable("idExpense") Long idExpense, @RequestBody Expense expense) {
-			Expense update = repository.findOne(idExpense);
+		@RequestMapping(method=RequestMethod.PUT, value="/{id}")
+		public ResponseEntity<Expense> updateExpense(@PathVariable("id") Long id, @RequestBody Expense expense) {
+			Expense update = repository.findOne(id);
 			update.setDescription(expense.getDescription());
 			update.setPrice(expense.getPrice());
-			return repository.save(update);
+			repository.save(update);
+			return new ResponseEntity<Expense>(update, HttpStatus.OK);
 		}
 	}
